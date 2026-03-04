@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shop Product Manager</title>
+
+  <!-- Tailwind + DaisyUI -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body class="bg-green-200 min-h-screen bg-base-200 px-80%">
+
+  <!-- ===================== -->
+  <!-- LOGIN SCREEN -->
+  <!-- ===================== -->
+  <section id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="card bg-base-100 shadow w-full max-w-md">
+      <div class="card-body">
+        <h2 class="card-title text-2xl">Login</h2>
+    
+
+        <div class="mt-4 space-y-3">
+          <label class="form-control w-full">
+            <div class="label"><span class="label-text">Username</span></div>
+            <input id="loginUser" class="input input-bordered" placeholder="Enter Username" />
+          </label>
+
+          <label class="form-control w-full">
+            <div class="label"><span class="label-text">Password</span></div>
+            <input id="loginPass" type="password" class="input input-bordered" placeholder="Enter Password" />
+          </label>
+
+          <div id="loginError" class="alert alert-error hidden">
+            Invalid username or password.
+          </div>
+
+          <button class="btn btn-primary w-full" id="loginBtn">Login</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===================== -->
+  <!-- APP (Hidden until login) -->
+  <!-- ===================== -->
+  <div id="app" class="hidden">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-30 bg-blue-200 shadow">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+
+        <!-- Left: Logo + Name -->
+        <div class="flex items-center gap-3">
+          <div>
+            <div class="text-lg font-bold leading-tight"><i class="fa-solid fa-cart-shopping"></i> Mahadi Mart</div>
+            <div class="text-xs opacity-70">Product & Sales Tracker</div>
+          </div>
+        </div>
+
+        <!-- Right buttons -->
+        <div class="flex gap-2">
+          
+          <button class="btn btn-primary btn-sm md:btn-md" onclick="toggleDashboard()">Dashboard</button>
+          <button class="btn btn-soft btn-primary btn-sm md:btn-md" onclick="logout()">Logout</button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- DASHBOARD (2 options only) -->
+    <section id="dashboard" class="hidden max-w-7xl mx-auto p-4 md:p-8">
+      <div class="bg-base-100 shadow rounded-box p-4 md:p-6">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <h2 class="text-xl font-bold">Dashboard</h2>
+
+          <div class="join">
+            <button class="btn join-item" id="btnTop" onclick="setDashboardView('top')">Top Selling</button>
+            <button class="btn join-item" id="btnSales" onclick="setDashboardView('sales')">Sales Details</button>
+          </div>
+        </div>
+
+        <div class="divider my-3"></div>
+
+        <!-- Dynamic content area -->
+        <div id="dashboardContent"></div>
+      </div>
+    </section>
+
+    <!-- MAIN PRODUCTS -->
+    <main class="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold">Products</h1>
+        <p class="text-sm opacity-70">Use <b>Sell</b> to reduce quantity and record the sale.</p>
+      </div>
+
+      <!-- Product Grid: 1 / 2 / 4 cards -->
+      <section id="productGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-yellow-100 border-t border-base-300 mt-10 text-center">
+      <div class="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <div class="font-bold text-xl"><i class="fa-solid fa-cart-shopping"></i> Mahadi Mart</div>
+          <div class="text-sm opacity-70">Helping shopkeepers manage products & sales.</div>
+        </div>
+
+        <div class="space-y-1">
+          <div class="font-semibold text-xl">Contact</div>
+          <div class="text-sm">📞 +8801XXXXXXXXX</div>
+          <div class="text-sm">✉ mahadimart@email.com</div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="font-semibold text-xl">Social</div>
+          <div class="flex justify-center gap-4 items-center">
+            <!-- Facebook -->
+            <a href="https://www.facebook.com/mahadihasanmahfuz12345" target="_blank" aria-label="Facebook">
+                <img class="w-7" src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook">
+            </a>
+  
+      <!-- Instagram -->
+            <a href="https://www.instagram.com/mahadi.hasan.mahfuz/" target="_blank" aria-label="Instagram">
+                <img class="w-7" src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
+            </a>
+  
+      <!-- WhatsApp -->
+            <a href="https://wa.me/+8801751013336" target="_blank" aria-label="WhatsApp">
+                <img class="w-7" src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp">
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center  text-xl opacity-70 py-3">
+        © <span id="year"></span> Mahadi Mart. All rights reserved.
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Add Product Modal -->
+  <dialog id="addModal" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg mb-4">Add New Product</h3>
+
+      <div class="grid gap-3">
+        <label class="form-control w-full">
+          <div class="label"><span class="label-text">Product Name</span></div>
+          <input id="pName" class="input input-bordered" placeholder="e.g., Rice (1kg)" />
+        </label>
+
+        <label class="form-control w-full">
+          <div class="label"><span class="label-text">Details</span></div>
+          <textarea id="pDetails" class="textarea textarea-bordered" placeholder="Short details..."></textarea>
+        </label>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <label class="form-control w-full">
+            <div class="label"><span class="label-text">Price</span></div>
+            <input id="pPrice" type="number" class="input input-bordered" placeholder="e.g., 120" min="0" step="0.01" />
+          </label>
+
+          <label class="form-control w-full">
+            <div class="label"><span class="label-text">Quantity</span></div>
+            <input id="pQty" type="number" class="input input-bordered" placeholder="e.g., 20" min="0" step="1" />
+          </label>
+        </div>
+
+        <label class="form-control w-full">
+          <div class="label"><span class="label-text">Image URL</span></div>
+          <input id="pImg" class="input input-bordered" placeholder="https://..." />
+        </label>
+      </div>
+
+      <div class="modal-action">
+        <form method="dialog" class="flex gap-2">
+          <button class="btn">Cancel</button>
+          <button class="btn btn-primary" type="button" onclick="addProductFromModal()">Add</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
