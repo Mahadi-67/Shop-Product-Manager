@@ -21,52 +21,80 @@ let dashboardView = "top"; // "top" | "sales"
 
 // --------- Data ----------
 let orders = [];
+let cart = [];
 let products = [];
 let salesHistory = []; // { name, price, time }
 
+// --------- Local Storage ----------
+function saveData() {
+  localStorage.setItem("products", JSON.stringify(products));
+  localStorage.setItem("orders", JSON.stringify(orders));
+  localStorage.setItem("cart", JSON.stringify(cart));
+  localStorage.setItem("salesHistory", JSON.stringify(salesHistory));
+}
+
+function loadData() {
+  const savedProducts = localStorage.getItem("products");
+  const savedOrders = localStorage.getItem("orders");
+  const savedCart = localStorage.getItem("cart");
+  const savedSales = localStorage.getItem("salesHistory");
+
+  if (savedProducts) products = JSON.parse(savedProducts);
+  if (savedOrders) orders = JSON.parse(savedOrders);
+  if (savedCart) cart = JSON.parse(savedCart);
+  if (savedSales) salesHistory = JSON.parse(savedSales);
+}
+
 // --------- Demo Seed ----------
 function seedDemo() {
-  products = [
-    {
-      name: "Milk 1L",
-      details: "Fresh dairy milk (pasteurized)",
-      price: 90,
-      quantity: 12,
-      sold: 0,
-      image:
-        "https://t4.ftcdn.net/jpg/02/31/84/29/360_F_231842968_qThCnmslPbEAwhg7nuW9rAy8qRNhRli7.jpg",
-    },
-    {
-      name: "Bread",
-      details: "Soft loaf bread (500g)",
-      price: 60,
-      quantity: 18,
-      sold: 0,
-      image:
-        "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      name: "Eggs (12 pcs)",
-      details: "Farm eggs, medium size",
-      price: 150,
-      quantity: 9,
-      sold: 0,
-      image:
-        "https://images.unsplash.com/photo-1518569656558-1f25e69d93d7?q=80&w=800&auto=format&fit=crop",
-    },
-    {
-      name: "Rice 1kg",
-      details: "Premium basmati rice",
-      price: 120,
-      quantity: 25,
-      sold: 0,
-      image:
-        "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?q=80&w=800&auto=format&fit=crop",
-    },
-  ];
+  loadData();
 
-  salesHistory = [];
+  if (products.length === 0) {
+    products = [
+      {
+        name: "Milk 1L",
+        details: "Fresh dairy milk (pasteurized)",
+        price: 90,
+        quantity: 12,
+        sold: 0,
+        image:
+          "https://t4.ftcdn.net/jpg/02/31/84/29/360_F_231842968_qThCnmslPbEAwhg7nuW9rAy8qRNhRli7.jpg",
+      },
+      {
+        name: "Bread",
+        details: "Soft loaf bread (500g)",
+        price: 60,
+        quantity: 18,
+        sold: 0,
+        image:
+          "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?q=80&w=800&auto=format&fit=crop",
+      },
+      {
+        name: "Eggs (12 pcs)",
+        details: "Farm eggs, medium size",
+        price: 150,
+        quantity: 9,
+        sold: 0,
+        image:
+          "https://images.unsplash.com/photo-1518569656558-1f25e69d93d7?q=80&w=800&auto=format&fit=crop",
+      },
+      {
+        name: "Rice 1kg",
+        details: "Premium basmati rice",
+        price: 120,
+        quantity: 25,
+        sold: 0,
+        image:
+          "https://images.unsplash.com/photo-1604329760661-e71dc83f8f26?q=80&w=800&auto=format&fit=crop",
+      },
+    ];
+
+    saveData();
+  }
+
   renderAll();
+  renderOrders();
+  renderCart();
 }
 
 // --------- Rendering ----------
@@ -101,26 +129,29 @@ function renderProducts() {
           </div>
 
        <div class="flex gap-2 mt-4 flex-wrap">
-${
-  currentRole === "admin"
-    ? `
-    <button class="btn btn-success btn-sm ${soldOut ? "btn-disabled" : ""}" onclick="sellProduct(${index})">
-      Sell
-    </button>
-    <button class="btn btn-warning btn-sm" onclick="editProduct(${index})">
-      Edit
-    </button>
-    <button class="btn btn-error btn-sm" onclick="deleteProduct(${index})">
-      Delete
-    </button>
-    `
-    : `
-    <button class="btn btn-primary btn-sm" onclick="openBuyModal(${index})">
-      Buy
-    </button>
-    `
-}
-</div>
+       ${
+        currentRole === "admin"
+          ? `
+          <button class="btn btn-warning btn-sm" onclick="editProduct(${index})">
+            Edit
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="restockProduct(${index})">
+            Re-stock
+          </button>
+          <button class="btn btn-error btn-sm" onclick="deleteProduct(${index})">
+            Delete
+          </button>
+          `
+          : `
+            <button class="btn btn-primary btn-sm ${soldOut ? "btn-disabled" : ""}"     onclick="openBuyModal(${index})">
+              Buy
+            </button>
+            <button class="btn btn-secondary btn-sm ${soldOut ? "btn-disabled" : ""}" onclick="addToCart(${index})">
+              Cart
+            </button>
+            `
+         }
+        </div>
 
           ${soldOut ? `<div class="alert alert-error mt-3 p-2 text-sm">Out of stock</div>` : ""}
         </div>
@@ -208,32 +239,7 @@ function updateDashboardButtons() {
 }
 
 // --------- Actions ----------
-function sellProduct(index) {
-  if (currentRole !== "admin") {
-    alert("Only admin can sell products.");
-    return;
-  }
-
-  const product = products[index];
-  if (!product) return;
-
-  if (product.quantity <= 0) {
-    alert("Out of stock!");
-    return;
-  }
-
-  product.quantity--;
-  product.sold++;
-
-  salesHistory.push({
-    name: product.name,
-    price: product.price,
-    time: new Date().toLocaleString(),
-  });
-
-  renderAll();
-}
-
+// Delete products
 function deleteProduct(index) {
   if (currentRole !== "admin") {
     alert("Only admin can delete products.");
@@ -247,9 +253,11 @@ function deleteProduct(index) {
   if (!ok) return;
 
   products.splice(index, 1);
+
+  saveData();
   renderAll();
 }
-
+// Edit products
 function editProduct(index) {
   if (currentRole !== "admin") {
     alert("Only admin can edit products.");
@@ -295,6 +303,34 @@ function editProduct(index) {
   product.quantity = Math.floor(qtyNum);
   product.image = newImage.trim();
 
+  saveData();
+  renderAll();
+}
+
+// Re-stock Product
+
+function restockProduct(index) {
+  if (currentRole !== "admin") {
+    alert("Only admin can re-stock products.");
+    return;
+  }
+
+  const product = products[index];
+  if (!product) return;
+
+  const amount = prompt(`Enter re-stock quantity for ${product.name}`, "1");
+  if (amount === null) return;
+
+  const qtyToAdd = Number(amount);
+
+  if (!Number.isFinite(qtyToAdd) || qtyToAdd <= 0) {
+    alert("Please enter a valid quantity.");
+    return;
+  }
+
+  product.quantity += Math.floor(qtyToAdd);
+
+  saveData();
   renderAll();
 }
 
@@ -320,6 +356,104 @@ function toggleOrders() {
   orders.classList.toggle("hidden");
 }
 
+function toggleCartSection() {
+  const cartSection = document.getElementById("cartSection");
+  if (!cartSection) return;
+
+  cartSection.classList.toggle("hidden");
+}
+// Add to Cart
+function addToCart(index) {
+  if (currentRole !== "user") return;
+
+  const product = products[index];
+  if (!product) return;
+
+  if (product.quantity <= 0) {
+    alert("Out of stock!");
+    return;
+  }
+
+  const qtyInput = prompt(`Enter quantity for ${product.name}`, "1");
+  if (qtyInput === null) return;
+
+  const qty = Number(qtyInput);
+
+  if (!Number.isFinite(qty) || qty <= 0) {
+    alert("Invalid quantity.");
+    return;
+  }
+
+  if (qty > product.quantity) {
+    alert("Not enough stock available.");
+    return;
+  }
+
+  const existingItem = cart.find(item => item.product === product.name);
+
+  if (existingItem) {
+    existingItem.quantity += qty;
+  } else {
+    cart.push({
+      product: product.name,
+      price: product.price,
+      quantity: qty,
+    });
+  }
+
+  renderCart();
+  saveData();
+
+  alert(`${qty} ${product.name} added to cart`);
+}
+// Render Cart
+function renderCart() {
+  const container = document.getElementById("cartContent");
+  if (!container) return;
+
+  if (cart.length === 0) {
+    container.innerHTML = `<p class="text-gray-600">No items in cart.</p>`;
+    return;
+  }
+
+  container.innerHTML = cart.map((item, i) => `
+  <div class="p-3 bg-base-200 rounded-box mb-2 flex justify-between items-center">
+
+    <div>
+      <div class="font-semibold">${item.product}</div>
+      <div class="text-sm">Price: ${formatMoney(item.price)}</div>
+      <div class="text-sm">Quantity: ${item.quantity}</div>
+      <div class="text-sm font-medium">Total: ${formatMoney(item.price * item.quantity)}</div>
+    </div>
+
+    <button class="btn btn-error btn-sm" onclick="deleteCartItem(${i})">
+      <i class="fa-solid fa-trash"></i>
+    </button>
+
+  </div>
+`).join("");
+}
+// Delete Cart Items
+function deleteCartItem(index) {
+  const ok = confirm("Remove this item from cart?");
+  if (!ok) return;
+
+  cart.splice(index, 1);
+
+  saveData();
+  renderCart();
+}
+// Delete Order
+function deleteOrder(index) {
+  const ok = confirm("Delete this order?");
+  if (!ok) return;
+
+  orders.splice(index, 1);
+
+  saveData();
+  renderOrders();
+}
+
 // --------- Modal ----------
 function openAddModal() {
   if (currentRole !== "admin") {
@@ -332,7 +466,7 @@ function openAddModal() {
 }
 
 let selectedProductIndex = null;
-
+// Open Buy Model
 function openBuyModal(index) {
   if (currentRole !== "user") return;
 
@@ -341,10 +475,11 @@ function openBuyModal(index) {
   const modal = document.getElementById("buyModal");
   if (modal) modal.showModal();
 }
-
+// Submit Order
 function submitOrder() {
   const name = document.getElementById("bName").value.trim();
   const phone = document.getElementById("bPhone").value.trim();
+  const qtyValue = Number(document.getElementById("bQty").value);
   const email = document.getElementById("bEmail").value.trim();
   const address = document.getElementById("bAddress").value.trim();
 
@@ -353,7 +488,22 @@ function submitOrder() {
     return;
   }
 
+  if (!Number.isFinite(qtyValue) || qtyValue <= 0) {
+    alert("Please enter a valid quantity.");
+    return;
+  }
+
+  const buyQty = Math.floor(qtyValue);
   const product = products[selectedProductIndex];
+  if (!product) return;
+
+  if (product.quantity < buyQty) {
+    alert("Not enough stock available.");
+    return;
+  }
+
+  product.quantity -= buyQty;
+  product.sold += buyQty;
 
   orders.push({
     product: product.name,
@@ -361,9 +511,19 @@ function submitOrder() {
     phone,
     email,
     address,
+    quantity: buyQty,
+    total: product.price * buyQty,
   });
 
+  salesHistory.push({
+    name: `${product.name} x${buyQty}`,
+    price: product.price * buyQty,
+    time: new Date().toLocaleString(),
+  });
+
+  saveData();
   renderOrders();
+  renderAll();
 
   alert("Order placed successfully!");
 
@@ -371,10 +531,11 @@ function submitOrder() {
 
   document.getElementById("bName").value = "";
   document.getElementById("bPhone").value = "";
+  document.getElementById("bQty").value = "1";
   document.getElementById("bEmail").value = "";
   document.getElementById("bAddress").value = "";
 }
-
+// Render Order
 function renderOrders() {
   const container = document.getElementById("ordersContent");
   if (!container) return;
@@ -384,18 +545,27 @@ function renderOrders() {
     return;
   }
 
-  container.innerHTML = orders.map(o => `
-    <div class="p-3 bg-base-200 rounded-box mb-2">
+  container.innerHTML = orders.map((o, i) => `
+  <div class="p-3 bg-base-200 rounded-box mb-2 flex justify-between items-center">
+
+    <div>
       <div class="font-semibold">${o.product}</div>
-      <div class="text-sm">${o.name}</div>
-      <div class="text-sm">${o.phone}</div>
+      <div class="text-sm">Name: ${o.name}</div>
+      <div class="text-sm">Phone: ${o.phone}</div>
+      <div class="text-sm">Quantity: ${o.quantity}</div>
+      <div class="text-sm">Total: ${formatMoney(o.total)}</div>
       <div class="text-sm">${o.address}</div>
     </div>
-  `).join("");
+
+    <button class="btn btn-error btn-sm" onclick="deleteOrder(${i})">
+      <i class="fa-solid fa-trash"></i>
+    </button>
+
+  </div>
+`).join("");
 }
 
-
-
+// Add Product from Model
 function addProductFromModal() {
   if (currentRole !== "admin") {
     alert("Only admin can add products.");
@@ -443,7 +613,8 @@ function addProductFromModal() {
 
   const modal = document.getElementById("addModal");
   if (modal && typeof modal.close === "function") modal.close();
-
+  
+  saveData();
   renderAll();
 }
 
@@ -452,12 +623,12 @@ function showApp() {
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
 }
-
+// Show Login
 function showLogin() {
   document.getElementById("app").classList.add("hidden");
   document.getElementById("loginScreen").classList.remove("hidden");
 }
-
+// Login
 function login() {
   const u = document.getElementById("loginUser").value.trim();
   const p = document.getElementById("loginPass").value.trim();
@@ -477,31 +648,59 @@ function login() {
     seedDemo();
     dashboardView = "top";
     applyRolePermissions();
+    renderOrders();
+    renderCart();
   } else {
     err.classList.remove("hidden");
   }
 }
-
+// Apply Role Permission
 function applyRolePermissions() {
   const dashboardBtn = document.getElementById("dashboardBtn");
   const orderBtn = document.getElementById("orderBtn");
+  const cartBtn = document.getElementById("cartBtn");
+  const resetBtn = document.getElementById("resetDataBtn");
 
   if (currentRole === "admin") {
-    dashboardBtn.classList.remove("hidden");
-    orderBtn.classList.add("hidden");
+    if (dashboardBtn) dashboardBtn.classList.remove("hidden");
+    if (orderBtn) orderBtn.classList.add("hidden");
+    if (cartBtn) cartBtn.classList.add("hidden");
+    if (resetBtn) resetBtn.classList.remove("hidden");
   } else {
-    dashboardBtn.classList.add("hidden");
-    orderBtn.classList.remove("hidden");
+    if (dashboardBtn) dashboardBtn.classList.add("hidden");
+    if (orderBtn) orderBtn.classList.remove("hidden");
+    if (cartBtn) cartBtn.classList.remove("hidden");
+    if (resetBtn) resetBtn.classList.add("hidden");
   }
 }
-
+// Logout
 function logout() {
   sessionStorage.removeItem("loggedIn");
   sessionStorage.removeItem("role");
   currentRole = null;
+
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("ordersSection").classList.add("hidden");
+  document.getElementById("cartSection").classList.add("hidden");
+
   showLogin();
 }
+// Reset All Data
+function resetAllData() {
+  const ok = confirm("This will delete ALL data. Continue?");
+  if (!ok) return;
 
+  localStorage.clear();
+
+  orders = [];
+  cart = [];
+  products = [];
+  salesHistory = [];
+
+  seedDemo();
+
+  alert("All data has been reset.");
+}
 // --------- Helpers ----------
 function formatMoney(n) {
   return "৳" + Number(n).toFixed(2);
@@ -530,15 +729,17 @@ document.addEventListener("DOMContentLoaded", () => {
       if (e.key === "Enter") login();
     });
   }
+  const resetBtn = document.getElementById("resetDataBtn");
 
-  const resetBtn = document.getElementById("resetBtn");
-  if (resetBtn) resetBtn.addEventListener("click", seedDemo);
-
-  // If already logged in (same tab), show app + demo
-  if (sessionStorage.getItem("loggedIn") === "true") {
-    showApp();
-    seedDemo();
-  } else {
-    showLogin();
-  }
+// If already logged in (same tab), show app + demo
+if (sessionStorage.getItem("loggedIn") === "true") {
+  currentRole = sessionStorage.getItem("role");
+  showApp();
+  seedDemo();
+  applyRolePermissions();
+  renderOrders();
+  renderCart();
+} else {
+  showLogin();
+}
 });
