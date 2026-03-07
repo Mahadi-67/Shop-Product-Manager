@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
-<body class="bg-green-200 min-h-screen bg-base-200 px-80%">
+<body class="bg-green-200 min-h-screen">
 
   <!-- ===================== -->
   <!-- LOGIN SCREEN -->
@@ -31,6 +31,14 @@
           <label class="form-control w-full">
             <div class="label"><span class="label-text">Password</span></div>
             <input id="loginPass" type="password" class="input input-bordered" placeholder="Enter Password" />
+          </label>
+
+          <label class="form-control w-full">
+            <div class="label"><span class="label-text">Login Type</span></div>
+            <select id="loginRole" class="select select-bordered">
+              <option value="admin">Admin</option>
+              <option value="user">User</option>
+            </select>
           </label>
 
           <div id="loginError" class="alert alert-error hidden">
@@ -56,15 +64,19 @@
         <!-- Left: Logo + Name -->
         <div class="flex items-center gap-3">
           <div>
-            <div class="text-lg font-bold leading-tight"><i class="fa-solid fa-cart-shopping"></i> Mahadi Mart</div>
-            <div class="text-xs opacity-70">Product & Sales Tracker</div>
+            <div class="text-lg font-bold leading-tight text-gray-900"><i class="fa-solid fa-cart-shopping"></i> Mahadi Mart</div>
+            <div class="text-xs text-gray-700">Product & Sales Tracker</div>
           </div>
         </div>
 
         <!-- Right buttons -->
         <div class="flex gap-2">
-          
-          <button class="btn btn-primary btn-sm md:btn-md" onclick="toggleDashboard()">Dashboard</button>
+          <button id="dashboardBtn" class="btn btn-primary btn-sm md:btn-md" onclick="toggleDashboard()">Dashboard</button>
+        
+          <button id="orderBtn" class="btn btn-primary btn-sm md:btn-md hidden" onclick="toggleOrders()">
+            Orders
+          </button>
+        
           <button class="btn btn-soft btn-primary btn-sm md:btn-md" onclick="logout()">Logout</button>
         </div>
 
@@ -90,11 +102,24 @@
       </div>
     </section>
 
+    <!-- Order Section -->
+
+    <section id="ordersSection" class="hidden max-w-7xl mx-auto p-4 md:p-8">
+      <div class="bg-base-100 shadow rounded-box p-4 md:p-6">
+        <h2 class="text-xl font-bold mb-4">Your Orders</h2>
+    
+        <div id="ordersContent">
+          <p class="text-gray-600">No orders yet.</p>
+        </div>
+    
+      </div>
+    </section>
+
     <!-- MAIN PRODUCTS -->
     <main class="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
       <div>
         <h1 class="text-2xl md:text-3xl font-bold">Products</h1>
-        <p class="text-sm opacity-70">Use <b>Sell</b> to reduce quantity and record the sale.</p>
+        <p class="text-sm text-gray-700">Use <b>Sell</b> to reduce quantity and record the sale.</p>
       </div>
 
       <!-- Product Grid: 1 / 2 / 4 cards -->
@@ -106,7 +131,7 @@
       <div class="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <div class="font-bold text-xl"><i class="fa-solid fa-cart-shopping"></i> Mahadi Mart</div>
-          <div class="text-sm opacity-70">Helping shopkeepers manage products & sales.</div>
+          <div class="text-sm text-gray-700">Helping shopkeepers manage products & sales.</div>
         </div>
 
         <div class="space-y-1">
@@ -136,7 +161,7 @@
         </div>
       </div>
 
-      <div class="text-center  text-xl opacity-70 py-3">
+      <div class="text-center text-xl text-gray-700 py-3">
         © <span id="year"></span> Mahadi Mart. All rights reserved.
       </div>
     </footer>
@@ -185,6 +210,45 @@
       </div>
     </div>
   </dialog>
+
+  <!-- Buy Product Model -->\
+   <!-- Buy Product Modal -->
+<dialog id="buyModal" class="modal">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg mb-4">Buy Product</h3>
+
+    <div class="grid gap-3">
+
+      <label class="form-control w-full">
+        <div class="label"><span class="label-text">Full Name</span></div>
+        <input id="bName" class="input input-bordered" placeholder="Your name" />
+      </label>
+
+      <label class="form-control w-full">
+        <div class="label"><span class="label-text">Mobile Number</span></div>
+        <input id="bPhone" class="input input-bordered" placeholder="01XXXXXXXXX" />
+      </label>
+
+      <label class="form-control w-full">
+        <div class="label"><span class="label-text">Email (optional)</span></div>
+        <input id="bEmail" class="input input-bordered" placeholder="example@email.com" />
+      </label>
+
+      <label class="form-control w-full">
+        <div class="label"><span class="label-text">Address</span></div>
+        <textarea id="bAddress" class="textarea textarea-bordered" placeholder="Your address"></textarea>
+      </label>
+
+    </div>
+
+    <div class="modal-action">
+      <form method="dialog">
+        <button class="btn">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitOrder()">Buy</button>
+      </form>
+    </div>
+  </div>
+</dialog>
 
   <script src="script.js"></script>
 </body>

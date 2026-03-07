@@ -3,13 +3,24 @@
 // =========================
 
 // --------- Auth (demo only) ----------
-const DEMO_USER = "admin";
-const DEMO_PASS = "1234";
+const USERS = {
+  admin: {
+    username: "admin",
+    password: "1234",
+  },
+  user: {
+    username: "user",
+    password: "5678",
+  },
+};
+
+let currentRole = null;
 
 // --------- Dashboard view state ----------
 let dashboardView = "top"; // "top" | "sales"
 
 // --------- Data ----------
+let orders = [];
 let products = [];
 let salesHistory = []; // { name, price, time }
 
@@ -81,7 +92,7 @@ function renderProducts() {
 
         <div class="card-body">
           <h2 class="card-title text-base">${escapeHtml(p.name)}</h2>
-          <p class="text-sm opacity-80">${escapeHtml(p.details)}</p>
+          <p class="text-sm text-gray-700">${escapeHtml(p.details)}</p>
 
           <div class="flex flex-wrap gap-2 mt-2">
             <span class="badge badge-primary">Price: ${formatMoney(p.price)}</span>
@@ -89,17 +100,27 @@ function renderProducts() {
             <span class="badge badge-neutral">Sold: ${p.sold}</span>
           </div>
 
-          <div class="flex gap-2 mt-4 flex-wrap">
-            <button class="btn btn-success btn-sm ${soldOut ? "btn-disabled" : ""}" onclick="sellProduct(${index})">
-              Sell
-            </button>
-            <button class="btn btn-warning btn-sm" onclick="editProduct(${index})">
-              Edit
-            </button>
-            <button class="btn btn-error btn-sm" onclick="deleteProduct(${index})">
-              Delete
-            </button>
-          </div>
+       <div class="flex gap-2 mt-4 flex-wrap">
+${
+  currentRole === "admin"
+    ? `
+    <button class="btn btn-success btn-sm ${soldOut ? "btn-disabled" : ""}" onclick="sellProduct(${index})">
+      Sell
+    </button>
+    <button class="btn btn-warning btn-sm" onclick="editProduct(${index})">
+      Edit
+    </button>
+    <button class="btn btn-error btn-sm" onclick="deleteProduct(${index})">
+      Delete
+    </button>
+    `
+    : `
+    <button class="btn btn-primary btn-sm" onclick="openBuyModal(${index})">
+      Buy
+    </button>
+    `
+}
+</div>
 
           ${soldOut ? `<div class="alert alert-error mt-3 p-2 text-sm">Out of stock</div>` : ""}
         </div>
@@ -108,19 +129,21 @@ function renderProducts() {
   });
 
   // Add Product Card at end
-  grid.innerHTML += `
-    <div class="card bg-base-100 shadow border border-dashed border-base-300">
-      <div class="card-body flex justify-center items-center text-center">
-        <div class="text-5xl">＋</div>
-        <h2 class="card-title">Add Product</h2>
-        <p class="text-sm opacity-70">Add a new item to your shop.</p>
-        <button class="btn btn-primary mt-2" onclick="openAddModal()">
-          Add Product
-        </button>
+  if (currentRole === "admin") {
+    grid.innerHTML += `
+      <div id="addProductCard" class="card bg-base-100 shadow border border-dashed border-base-300">
+        <div class="card-body flex justify-center items-center text-center">
+          <div class="text-5xl">＋</div>
+          <h2 class="card-title">Add Product</h2>
+          <p class="text-sm text-gray-700">Add a new item to your shop.</p>
+          <button class="btn btn-primary mt-2" onclick="openAddModal()">
+            Add Product
+          </button>
+        </div>
       </div>
-    </div>
-  `;
-}
+    `;
+  }
+} 
 
 function renderDashboardContent() {
   updateDashboardButtons();
@@ -138,7 +161,7 @@ function renderTopSellingHTML() {
     .filter((p) => p.sold > 0);
 
   if (soldOnly.length === 0) {
-    return `<div class="text-sm opacity-70">No sales yet.</div>`;
+    return `<div class="text-sm text-gray-600">No sales yet.</div>`;
   }
 
   return soldOnly
@@ -147,7 +170,7 @@ function renderTopSellingHTML() {
         <div class="p-3 bg-base-200 rounded-box mb-2 flex items-center justify-between">
           <div>
             <div class="font-semibold">${i + 1}. ${escapeHtml(p.name)}</div>
-            <div class="text-xs opacity-70">Remaining: ${p.quantity}</div>
+            <div class="text-xs text-gray-600">Remaining: ${p.quantity}</div>
           </div>
           <span class="badge badge-accent">Sold: ${p.sold}</span>
         </div>
@@ -158,7 +181,7 @@ function renderTopSellingHTML() {
 
 function renderSalesDetailsHTML() {
   if (salesHistory.length === 0) {
-    return `<div class="text-sm opacity-70">Nothing sold yet.</div>`;
+    return `<div class="text-sm text-gray-700">Nothing sold yet.</div>`;
   }
 
   return [...salesHistory]
@@ -168,7 +191,7 @@ function renderSalesDetailsHTML() {
         <div class="p-3 bg-base-200 rounded-box mb-2">
           <div class="font-semibold">${escapeHtml(s.name)}</div>
           <div class="text-sm">${formatMoney(s.price)}</div>
-          <div class="text-xs opacity-70">${escapeHtml(s.time)}</div>
+          <div class="text-xs text-gray-700">${escapeHtml(s.time)}</div>
         </div>
       `
     )
@@ -186,6 +209,11 @@ function updateDashboardButtons() {
 
 // --------- Actions ----------
 function sellProduct(index) {
+  if (currentRole !== "admin") {
+    alert("Only admin can sell products.");
+    return;
+  }
+
   const product = products[index];
   if (!product) return;
 
@@ -207,6 +235,11 @@ function sellProduct(index) {
 }
 
 function deleteProduct(index) {
+  if (currentRole !== "admin") {
+    alert("Only admin can delete products.");
+    return;
+  }
+
   const product = products[index];
   if (!product) return;
 
@@ -218,6 +251,10 @@ function deleteProduct(index) {
 }
 
 function editProduct(index) {
+  if (currentRole !== "admin") {
+    alert("Only admin can edit products.");
+    return;
+  }
   const product = products[index];
   if (!product) return;
 
@@ -275,13 +312,95 @@ function setDashboardView(view) {
   renderDashboardContent();
 }
 
+function toggleOrders() {
+  const orders = document.getElementById("ordersSection");
+
+  if (!orders) return;
+
+  orders.classList.toggle("hidden");
+}
+
 // --------- Modal ----------
 function openAddModal() {
+  if (currentRole !== "admin") {
+    alert("Only admin can add products.");
+    return;
+  }
+
   const modal = document.getElementById("addModal");
   if (modal && typeof modal.showModal === "function") modal.showModal();
 }
 
+let selectedProductIndex = null;
+
+function openBuyModal(index) {
+  if (currentRole !== "user") return;
+
+  selectedProductIndex = index;
+
+  const modal = document.getElementById("buyModal");
+  if (modal) modal.showModal();
+}
+
+function submitOrder() {
+  const name = document.getElementById("bName").value.trim();
+  const phone = document.getElementById("bPhone").value.trim();
+  const email = document.getElementById("bEmail").value.trim();
+  const address = document.getElementById("bAddress").value.trim();
+
+  if (!name || !phone || !address) {
+    alert("Please fill required fields.");
+    return;
+  }
+
+  const product = products[selectedProductIndex];
+
+  orders.push({
+    product: product.name,
+    name,
+    phone,
+    email,
+    address,
+  });
+
+  renderOrders();
+
+  alert("Order placed successfully!");
+
+  document.getElementById("buyModal").close();
+
+  document.getElementById("bName").value = "";
+  document.getElementById("bPhone").value = "";
+  document.getElementById("bEmail").value = "";
+  document.getElementById("bAddress").value = "";
+}
+
+function renderOrders() {
+  const container = document.getElementById("ordersContent");
+  if (!container) return;
+
+  if (orders.length === 0) {
+    container.innerHTML = `<p class="text-gray-600">No orders yet.</p>`;
+    return;
+  }
+
+  container.innerHTML = orders.map(o => `
+    <div class="p-3 bg-base-200 rounded-box mb-2">
+      <div class="font-semibold">${o.product}</div>
+      <div class="text-sm">${o.name}</div>
+      <div class="text-sm">${o.phone}</div>
+      <div class="text-sm">${o.address}</div>
+    </div>
+  `).join("");
+}
+
+
+
 function addProductFromModal() {
+  if (currentRole !== "admin") {
+    alert("Only admin can add products.");
+    return;
+  }
   const nameEl = document.getElementById("pName");
   const detailsEl = document.getElementById("pDetails");
   const priceEl = document.getElementById("pPrice");
@@ -342,26 +461,44 @@ function showLogin() {
 function login() {
   const u = document.getElementById("loginUser").value.trim();
   const p = document.getElementById("loginPass").value.trim();
+  const role = document.getElementById("loginRole").value;
 
   const err = document.getElementById("loginError");
   err.classList.add("hidden");
 
-  if (u === DEMO_USER && p === DEMO_PASS) {
+  const account = USERS[role];
+
+  if (u === account.username && p === account.password) {
+    currentRole = role;
     sessionStorage.setItem("loggedIn", "true");
+    sessionStorage.setItem("role", role);
+
     showApp();
-
-    // ✅ IMPORTANT FIX: load demo cards right after login
     seedDemo();
-
-    // default dashboard view
     dashboardView = "top";
+    applyRolePermissions();
   } else {
     err.classList.remove("hidden");
   }
 }
 
+function applyRolePermissions() {
+  const dashboardBtn = document.getElementById("dashboardBtn");
+  const orderBtn = document.getElementById("orderBtn");
+
+  if (currentRole === "admin") {
+    dashboardBtn.classList.remove("hidden");
+    orderBtn.classList.add("hidden");
+  } else {
+    dashboardBtn.classList.add("hidden");
+    orderBtn.classList.remove("hidden");
+  }
+}
+
 function logout() {
   sessionStorage.removeItem("loggedIn");
+  sessionStorage.removeItem("role");
+  currentRole = null;
   showLogin();
 }
 
