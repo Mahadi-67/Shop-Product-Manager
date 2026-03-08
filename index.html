@@ -114,52 +114,56 @@
     <!-- HEADER -->
     <header class="sticky top-0 z-30 bg-blue-200 shadow">
       <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-
+    
         <!-- Left: Logo + Name -->
         <div class="flex items-center gap-3">
           <div>
-            <div class="text-lg font-bold leading-tight text-gray-900"><i class="fa-solid fa-cart-shopping"></i> Mahadi Mart</div>
+            <div class="text-lg font-bold leading-tight text-gray-900">
+              <i class="fa-solid fa-cart-shopping"></i> Mahadi Mart
+            </div>
             <div class="text-xs text-gray-700">Product & Sales Tracker</div>
           </div>
         </div>
-
+    
         <!-- Right buttons -->
 
         <div class="flex gap-2 items-center">
           <button id="dashboardBtn" class="btn btn-primary btn-sm md:btn-md" onclick="toggleDashboard()">Dashboard</button>
-        
+    
           <button id="cartBtn" class="btn btn-secondary btn-sm md:btn-md hidden" onclick="toggleCartSection()">
             Cart
           </button>
-        
+    
           <button id="resetDataBtn" class="btn btn-error btn-sm md:btn-md hidden" onclick="resetAllData()">
             Reset Data
           </button>
-        
+    
           <button id="adminLogoutBtn" class="btn btn-soft btn-primary btn-sm md:btn-md hidden" onclick="logout()">
             Logout
           </button>
-        
+    
           <div class="relative">
             <button id="profileBtn" class="btn btn-primary btn-sm md:btn-md hidden" onclick="toggleProfileMenu()">
               Profile
             </button>
-        
+    
             <div id="profileMenu" class="hidden absolute right-0 mt-2 w-52 bg-base-100 shadow rounded-box p-2 z-50">
               <button class="btn btn-ghost btn-sm w-full justify-start" onclick="toggleAccountSection()">
                 Account
               </button>
-        
+    
               <button class="btn btn-ghost btn-sm w-full justify-start" onclick="toggleOrders()">
                 All Orders
               </button>
-        
+    
               <button class="btn btn-error btn-sm w-full justify-start mt-1" onclick="logout()">
                 Logout
               </button>
             </div>
           </div>
         </div>
+    
+      </div>
     </header>
 
     <!-- DASHBOARD (2 options only) -->
