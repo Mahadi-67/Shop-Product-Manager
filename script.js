@@ -528,10 +528,13 @@ function setDashboardView(view) {
 
 function toggleOrders() {
   const orders = document.getElementById("ordersSection");
-
+  
   if (!orders) return;
 
   orders.classList.toggle("hidden");
+
+  const menu = document.getElementById("profileMenu");
+  if (menu) menu.classList.add("hidden");
 }
 
 function toggleCartSection() {
@@ -539,6 +542,9 @@ function toggleCartSection() {
   if (!cartSection) return;
 
   cartSection.classList.toggle("hidden");
+
+  const menu = document.getElementById("profileMenu");
+  if (menu) menu.classList.add("hidden");
 }
 // Toggle Profile Menu
 function toggleProfileMenu() {
@@ -875,7 +881,9 @@ function openBuyModal(index) {
   document.getElementById("bkashNumber").value = "";
   document.getElementById("bkashTxn").value = "";
   document.getElementById("cardUserNumber").value = "";
-document.getElementById("cardTxn").value = "";
+  document.getElementById("cardTxn").value = "";
+
+  togglePaymentFields();
 
   const modal = document.getElementById("buyModal");
   if (modal) modal.showModal();
@@ -1009,13 +1017,14 @@ function confirmPayment() {
   document.getElementById("bAddress").value = "";
 
   document.getElementById("paymentMethod").value = "";
-  document.getElementById("bkashNumber").value = "";
-  document.getElementById("bkashTxn").value = "";
-  document.getElementById("cardUserNumber").value = "";
-  document.getElementById("cardTxn").value = "";
+document.getElementById("bkashNumber").value = "";
+document.getElementById("bkashTxn").value = "";
+document.getElementById("cardUserNumber").value = "";
+document.getElementById("cardTxn").value = "";
 
-  togglePaymentFields();
-  pendingOrder = null;
+togglePaymentFields();
+pendingOrder = null;
+selectedProductIndex = null;
 
   alert("Payment successful and order placed.");
 }
